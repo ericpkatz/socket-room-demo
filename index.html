@@ -1,0 +1,57 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <script src="/socket.io/socket.io.js"></script>
+    <h1></h1>
+    <form>
+      <input />
+      <button>Submit</button>
+    </form>
+    <ul>
+    </ul>
+  <script>
+    //input for message
+    const input = document.querySelector('input');
+    //form
+    const form = document.querySelector('form');
+    //message list
+    const ul = document.querySelector('ul');
+    //title
+    const h1 = document.querySelector('h1');
+
+    //find a user in session storage
+    let user = window.sessionStorage.getItem('user');
+    if(!user){
+      //create a user with random number
+      user = Math.floor(Math.random() * 1000);
+      window.sessionStorage.setItem('user', user);
+    }
+
+    //get room from hash
+    const room = window.location.hash.slice(1);
+
+    //emit message
+    form.addEventListener('submit', (ev)=> {
+      ev.preventDefault();
+      //tell them the room you want to send to
+      socket.emit('message', {room, message: input.value, user});
+      input.value = '';
+    });
+
+    //set up socket
+    const socket = io();
+
+    //display the room title
+    h1.innerHTML = `${ user } in ${room}`;
+
+    socket.on('connect', ()=> {
+      //joing your room
+      socket.emit('join', room);
+      socket.on('message', (message)=> {
+        ul.innerHTML += `<li>${message}</li>`;
+      });
+    });
+  </script>
+  </body>
+</html>
